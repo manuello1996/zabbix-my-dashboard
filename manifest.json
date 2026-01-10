@@ -1,0 +1,26 @@
+{
+    "manifest_version": 2.0,
+    "id": "my-dashboard",
+    "type": "module",
+    "version": "7.0",
+    "name": "My-Dashboard",
+    "namespace": "MyDashboard",
+    "author": "Manuel Pesenti",
+    "description": "Zabbix frontend module create a defined custom board, manage custom link for menu entry",
+    "actions": {
+      "custom.dashboard": {
+        "class": "CustomDashboard",
+        "view": "custom.dashboard"
+      },
+      "external.links.edit": {
+        "class": "ExternalLinksEdit",
+        "view": "external.links"
+      },
+      "external.links.update": {
+        "class": "ExternalLinksUpdate"
+      }
+    },
+    "assets": {
+      "css": ["style.css"]
+    }
+}
