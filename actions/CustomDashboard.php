@@ -25,15 +25,23 @@ class CustomDashboard extends CController {
         $userData = CWebUser::$data;  // Static access
 
         $userID     = $userData['userid'] ?? 'no_userid';
-        $username   = $userData['username'] ?? 'no_username';
+        $username   = $userData['username'] ?? $userData['alias'] ?? 'no_username';
         $name       = $userData['name']    ?? 'no_name';
         $surname    = $userData['surname'] ?? 'no_surname';
         $userip     = $userData['userip'] ?? 'no_userip';
 
 
+        $userOutputFields = ['userid', 'name', 'surname'];
+        if (array_key_exists('username', $userData) || !array_key_exists('alias', $userData)) {
+            $userOutputFields[] = 'username';
+        }
+        else {
+            $userOutputFields[] = 'alias';
+        }
+
         $userDataAPI = API::User()->get([
             'userids'       => [$userID],
-            'output'        => ['userid','alias','name','surname'],
+            'output'        => $userOutputFields,
             'selectUsrgrps' => ['usrgrpid','name'],
             'selectRole'    => ['roleid', 'name'],
             'selectMedias'  => ['mediatypeid', 'sendto', 'period', 'severity', 'active']

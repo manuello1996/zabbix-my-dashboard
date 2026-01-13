@@ -19,7 +19,7 @@ Custom My Dashboard is a Zabbix frontend module that provides a personal dashboa
 - Menu extension point for custom links.
 
 ## Requirements
-- Zabbix 7.0 (frontend module)
+- Zabbix 7.0+ (inc 7.2 and 7.4)
 
 ## Installation
 1) Create a folder in your Zabbix server modules directory (by default `/usr/share/zabbix/`) and copy this repository into `Custom-My-Dashboard`.
