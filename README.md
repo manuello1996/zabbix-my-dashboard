@@ -39,6 +39,8 @@ When the module is enabled, it creates the first link macro (`{$MYDASHBOARD_EXTE
 ### User-level custom links
 Users can manage their own links without Administration access by going to User settings -> Custom links. These links are stored per user and appear under a personal "User Link" menu entry (label can be customized on the same page).
 
+![User links](docs/module-user.png)
+
 ## Menu label override
 You can rename the "My Zabbix Home" menu entry by creating a global macro:
 - `{$MYDASHBOARD_MENU_ENTRY}`: custom label shown in the main menu.

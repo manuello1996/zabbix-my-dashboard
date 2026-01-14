@@ -117,12 +117,12 @@ if ($macro_entries) {
 		]);
 	}
 
-	$form->addItem(
-		(new CDiv([
-			(new CTag('h4', true, _('Stored macros')))->addClass(ZBX_STYLE_HEADER_TITLE),
-			$macro_table
-		]))->addClass(ZBX_STYLE_TABLE_FORMS_SEPARATOR)
-	);
+	#$form->addItem(
+	#	(new CDiv([
+	#			(new CTag('h4', true, _('Stored macros')))->addClass(ZBX_STYLE_HEADER_TITLE),
+	#			$macro_table
+	#		]))->addClass(ZBX_STYLE_TABLE_FORMS_SEPARATOR)
+	#);
 }
 
 $footer = makeFormFooter(

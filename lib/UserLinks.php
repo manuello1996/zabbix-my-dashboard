@@ -8,9 +8,29 @@ use DB;
 
 final class MyDashboardUserLinks {
 	private const PROFILE_LINKS = 'mydashboard-user-links';
+	private const PROFILE_LINKS_COUNT = 'mydashboard-user-links-count';
+	private const PROFILE_LINKS_CHUNK_FORMAT = 'mydashboard-user-links-%d';
 	private const PROFILE_MENU_ENTRY = 'mydashboard-user-menu-entry';
 
 	public static function getLinks(): array {
+		$count = (int) CProfile::get(self::PROFILE_LINKS_COUNT, '0');
+		if ($count > 0) {
+			$entries = [];
+			for ($i = 1; $i <= $count; $i++) {
+				$key = sprintf(self::PROFILE_LINKS_CHUNK_FORMAT, $i);
+				$raw = CProfile::get($key, '');
+				if ($raw === '') {
+					continue;
+				}
+				$data = json_decode($raw, true);
+				if (is_array($data)) {
+					$entries = array_merge($entries, $data);
+				}
+			}
+
+			return self::decodeLinks($entries);
+		}
+
 		$raw = CProfile::get(self::PROFILE_LINKS, '');
 		if ($raw === '') {
 			return [];
@@ -123,26 +143,113 @@ final class MyDashboardUserLinks {
 			];
 		}
 
+		$existing_count = (int) CProfile::get(self::PROFILE_LINKS_COUNT, '0');
+		if ($existing_count > 0) {
+			for ($i = 1; $i <= $existing_count; $i++) {
+				CProfile::delete(sprintf(self::PROFILE_LINKS_CHUNK_FORMAT, $i));
+			}
+		}
+		CProfile::delete(self::PROFILE_LINKS);
+		CProfile::delete(self::PROFILE_LINKS_COUNT);
+
 		if (!$compact) {
-			CProfile::delete(self::PROFILE_LINKS);
 			return true;
 		}
 
-		$encoded = json_encode($compact, JSON_UNESCAPED_SLASHES);
-		if ($encoded === false) {
-			$errors[] = _('Failed to encode external links.');
-			return false;
-		}
-
 		$max_length = DB::getFieldLength('profiles', 'value_str');
-		if (strlen($encoded) > $max_length) {
-			$errors[] = _s('External links exceed the maximum size of %1$d characters.', $max_length);
+
+		$chunks = self::encodeChunks($compact, $max_length, $errors);
+		if ($chunks === null) {
 			return false;
 		}
 
-		CProfile::update(self::PROFILE_LINKS, $encoded, PROFILE_TYPE_STR);
+		foreach ($chunks as $index => $encoded) {
+			CProfile::update(sprintf(self::PROFILE_LINKS_CHUNK_FORMAT, $index + 1), $encoded, PROFILE_TYPE_STR);
+		}
+		CProfile::update(self::PROFILE_LINKS_COUNT, (string) count($chunks), PROFILE_TYPE_STR);
 
 		return true;
+	}
+
+	public static function getStoredValues(): array {
+		$values = [];
+
+		$single = CProfile::get(self::PROFILE_LINKS, '');
+		if ($single !== '') {
+			$values[self::PROFILE_LINKS] = $single;
+		}
+
+		$count = (int) CProfile::get(self::PROFILE_LINKS_COUNT, '0');
+		if ($count > 0) {
+			$values[self::PROFILE_LINKS_COUNT] = (string) $count;
+			for ($i = 1; $i <= $count; $i++) {
+				$key = sprintf(self::PROFILE_LINKS_CHUNK_FORMAT, $i);
+				$value = CProfile::get($key, '');
+				if ($value !== '') {
+					$values[$key] = $value;
+				}
+			}
+		}
+
+		$menu_entry = CProfile::get(self::PROFILE_MENU_ENTRY, '');
+		if ($menu_entry !== '') {
+			$values[self::PROFILE_MENU_ENTRY] = $menu_entry;
+		}
+
+		return $values;
+	}
+
+	private static function encodeChunks(array $links, int $max_length, array &$errors): ?array {
+		$chunks = [];
+		$current = [];
+
+		foreach ($links as $entry) {
+			$candidate = array_merge($current, [$entry]);
+			$encoded = json_encode($candidate, JSON_UNESCAPED_SLASHES);
+			if ($encoded === false) {
+				$errors[] = _('Failed to encode external links.');
+				return null;
+			}
+
+			if (strlen($encoded) > $max_length) {
+				if (!$current) {
+					$errors[] = _s('External links exceed the maximum size of %1$d characters.', $max_length);
+					return null;
+				}
+
+				$final = json_encode($current, JSON_UNESCAPED_SLASHES);
+				if ($final === false) {
+					$errors[] = _('Failed to encode external links.');
+					return null;
+				}
+				$chunks[] = $final;
+
+				$current = [$entry];
+				$single = json_encode($current, JSON_UNESCAPED_SLASHES);
+				if ($single === false) {
+					$errors[] = _('Failed to encode external links.');
+					return null;
+				}
+				if (strlen($single) > $max_length) {
+					$errors[] = _s('External links exceed the maximum size of %1$d characters.', $max_length);
+					return null;
+				}
+			}
+			else {
+				$current = $candidate;
+			}
+		}
+
+		if ($current) {
+			$final = json_encode($current, JSON_UNESCAPED_SLASHES);
+			if ($final === false) {
+				$errors[] = _('Failed to encode external links.');
+				return null;
+			}
+			$chunks[] = $final;
+		}
+
+		return $chunks;
 	}
 
 	private static function decodeLinks(array $entries): array {

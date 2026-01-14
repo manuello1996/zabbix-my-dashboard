@@ -112,6 +112,27 @@ $footer = makeFormFooter(
 $footer->addClass('external-links-footer');
 $form->addItem($footer);
 
+$profile_entries = $data['profile_entries'] ?? [];
+if ($profile_entries) {
+	$profile_table = (new CTable())
+		->addClass(ZBX_STYLE_LIST_TABLE)
+		->setHeader([_('Profile key'), _('Stored value')]);
+
+	foreach ($profile_entries as $key => $value) {
+		$profile_table->addRow([
+			(new CCol($key))->addClass(ZBX_STYLE_NOWRAP),
+			(new CCol($value))
+		]);
+	}
+
+	#$form->addItem(
+	#	(new CDiv([
+	#		(new CTag('h4', true, _('Stored profile values')))->addClass(ZBX_STYLE_HEADER_TITLE),
+	#		$profile_table
+	#	]))->addClass(ZBX_STYLE_TABLE_FORMS_SEPARATOR)
+	#);
+}
+
 $page->addItem($form);
 show_messages();
 $page->show();

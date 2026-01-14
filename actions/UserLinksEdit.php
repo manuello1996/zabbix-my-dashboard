@@ -59,7 +59,8 @@ class UserLinksEdit extends CController {
 			'menu_entry_value' => $menu_entry_value,
 			'menu_entry_default' => _('User Link'),
 			'form_action' => 'user.links.update',
-			'csrf_token' => CCsrfTokenHelper::get('user.links.update')
+			'csrf_token' => CCsrfTokenHelper::get('user.links.update'),
+			'profile_entries' => MyDashboardUserLinks::getStoredValues()
 		];
 
 		$this->setResponse(new CControllerResponseData($data));
