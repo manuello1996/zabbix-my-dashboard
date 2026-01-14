@@ -18,6 +18,13 @@
       },
       "external.links.update": {
         "class": "ExternalLinksUpdate"
+      },
+      "user.links.edit": {
+        "class": "UserLinksEdit",
+        "view": "user.links"
+      },
+      "user.links.update": {
+        "class": "UserLinksUpdate"
       }
     },
     "assets": {

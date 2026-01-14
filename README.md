@@ -36,6 +36,9 @@ The module extends the main menu by adding a "My Zabbix Home" section. You can a
 
 When the module is enabled, it creates the first link macro (`{$MYDASHBOARD_EXTERNAL_LINK_1}`) for the Permission overview page (`custom.dashboard`). Additional links you add start from `{$MYDASHBOARD_EXTERNAL_LINK_2}`.
 
+### User-level custom links
+Users can manage their own links without Administration access by going to User settings -> Custom links. These links are stored per user and appear under a personal "User Link" menu entry (label can be customized on the same page).
+
 ## Menu label override
 You can rename the "My Zabbix Home" menu entry by creating a global macro:
 - `{$MYDASHBOARD_MENU_ENTRY}`: custom label shown in the main menu.
