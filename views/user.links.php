@@ -3,13 +3,15 @@
 /** @var array $data */
 
 $page = new CHtmlPage();
-$page->setTitle($data['page_title'] ?? _('External links'));
+$page->setTitle($data['page_title'] ?? _('User links'));
+
+$form_action = $data['form_action'] ?? 'user.links.update';
 
 $form = (new CForm())
 	->setId('external-links-form')
 	->setName('external_links_form')
 	->setAttribute('aria-labelledby', CHtmlPage::PAGE_TITLE_ID)
-	->addItem((new CVar('action', 'external.links.update'))->removeId())
+	->addItem((new CVar('action', $form_action))->removeId())
 	->addItem((new CVar(CSRF_TOKEN_NAME, $data['csrf_token']))->removeId());
 
 $links = $data['links'] ?? [];
@@ -17,7 +19,7 @@ if (!$links) {
 	$links = [['label' => '', 'type' => 'external', 'value' => '', 'target' => '_self']];
 }
 $menu_entry_value = (string)($data['menu_entry_value'] ?? '');
-$index = 0;
+$menu_entry_default = (string)($data['menu_entry_default'] ?? _('User Link'));
 
 $table = (new CTable())
 	->setId('external-links-table')
@@ -85,10 +87,10 @@ $form->addItem(
 			->addClass(ZBX_STYLE_LIST_TABLE)
 			->setHeader([_('Menu entry label'), _('Value')])
 			->addRow([
-				(new CCol(_('My Zabbix Home')))->addClass(ZBX_STYLE_NOWRAP),
+				(new CCol($menu_entry_default))->addClass(ZBX_STYLE_NOWRAP),
 				(new CTextBox('menu_entry', $menu_entry_value))
 					->setWidth(ZBX_TEXTAREA_STANDARD_WIDTH)
-					->setAttribute('placeholder', _('My Zabbix Home'))
+					->setAttribute('placeholder', $menu_entry_default)
 			]),
 		$table,
 		$controls,
@@ -104,32 +106,32 @@ $form->addItem(
 		->setAttribute('style', 'min-width: '.ZBX_TEXTAREA_BIG_WIDTH.'px;')
 );
 
-$macro_entries = $data['macro_entries'] ?? [];
-if ($macro_entries) {
-	$macro_table = (new CTable())
-		->addClass(ZBX_STYLE_LIST_TABLE)
-		->setHeader([_('Macro'), _('Value')]);
-
-	foreach ($macro_entries as $entry) {
-		$macro_table->addRow([
-			(new CCol($entry['macro'] ?? ''))->addClass(ZBX_STYLE_NOWRAP),
-			(new CCol($entry['value'] ?? ''))
-		]);
-	}
-
-	#$form->addItem(
-	#	(new CDiv([
-	#			(new CTag('h4', true, _('Stored macros')))->addClass(ZBX_STYLE_HEADER_TITLE),
-	#			$macro_table
-	#		]))->addClass(ZBX_STYLE_TABLE_FORMS_SEPARATOR)
-	#);
-}
-
 $footer = makeFormFooter(
 	(new CSubmitButton(_('Update')))
 );
 $footer->addClass('external-links-footer');
 $form->addItem($footer);
+
+$profile_entries = $data['profile_entries'] ?? [];
+if ($profile_entries) {
+	$profile_table = (new CTable())
+		->addClass(ZBX_STYLE_LIST_TABLE)
+		->setHeader([_('Profile key'), _('Stored value')]);
+
+	foreach ($profile_entries as $key => $value) {
+		$profile_table->addRow([
+			(new CCol($key))->addClass(ZBX_STYLE_NOWRAP),
+			(new CCol($value))
+		]);
+	}
+
+	#$form->addItem(
+	#	(new CDiv([
+	#		(new CTag('h4', true, _('Stored profile values')))->addClass(ZBX_STYLE_HEADER_TITLE),
+	#		$profile_table
+	#	]))->addClass(ZBX_STYLE_TABLE_FORMS_SEPARATOR)
+	#);
+}
 
 $page->addItem($form);
 show_messages();
